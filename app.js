@@ -15,9 +15,7 @@ const postSchema = new mongoose.Schema({
   title: String,
   author: String,
   post: String,
-  like: { type: Number, default: 0 },
-  dislike: { type: Number, default: 0 },
-  comment:[{name:String ,review:String}]
+ 
 });
 const Post = mongoose.model("Post", postSchema);
 
@@ -25,6 +23,7 @@ app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
+
 app.get("/", function (req, res) {
   Post.find(function (err, result) {
     if (err) {
@@ -75,95 +74,12 @@ app.get("/posts/:postId", function (req, res) {
     }
     else {
       
-      res.render("post", { title: result.title, content: result.post, author: result.author, id: result._id, likecount: result.like, dislikecount: result.dislike ,comments:result.comment});
+      res.render("post", { title: result.title, content: result.post, author: result.author});
 
     }
   });
 
 });
-app.post("/posts/:postId", function (req, res) {
-  const request = req.body.like;
-  const request2 = req.body.dislike;
-   const id = (req.body.idofelement);
-  if (request && !request2) {
-    Post.findOne({ _id: id }, function (err, result) {
-      if (!err) {
-        if (result) {
-          const likecounter = result.like + 1;
-          Post.findOneAndUpdate(
-            { _id: id }, { like: likecounter }, function (err, success) {
-              if (err) {
-                console.log(err);
-              }
-              else {
-                  
-                  res.redirect("/posts/"+id);
-                 
-              }
-            }
-          );
-        }
-      }
-    });
-  }
-  else if(request2 && !request){
-    Post.findOne({ _id: id }, function (err, result) {
-      if (!err) {
-        if (result) {
-          const dislikecounter = result.dislike + 1;
-          Post.findOneAndUpdate(
-            { _id: id }, { dislike: dislikecounter }, function (err, success) {
-              if (err) {
-                console.log(err);
-              }
-              else {
-                  
-                  res.redirect("/posts/"+id);
-                 
-              }
-            }
-          );
-        }
-      }
-    });
-  }
-  else{
-    const id = req.body.idofelement;
-    const personcomment = (req.body.comment);
-    const nameofperson = (req.body.name);
-    console.log(personcomment);
-    console.log(id);
-    Post.findOne({ _id: id }, function (err, result) {
-      if (!err) {
-        if (result) {
-          const ccomment = {
-             name: nameofperson,
-             review: personcomment
-          };
-           
-          Post.findOneAndUpdate(
-            { _id: id }, {$push:{comment:ccomment}}, function (err, success) {
-              if (err) {
-                console.log(err);
-              }
-              else {
-                  res.redirect("/posts/"+id);
-                 
-              }
-            }
-          );
-        }
-      }
-    }); 
-  }
-});
- 
-
-
-
-
-
-
 
 
 app.listen(process.env.PORT||3000, function () {
